@@ -458,7 +458,37 @@ let view = new Date();
 view.setDate(1);
 
 function save(){
+  db.races = db.races.filter((r, i, arr) => {
 
+    if(r.source !== "auto"){
+      return true;
+    }
+
+    return !arr.some((x, j) => {
+
+      if(j === i || x.source !== "auto"){
+        return false;
+      }
+
+      if(
+        x.person !== r.person ||
+        x.venue !== r.venue ||
+        x.end !== r.end
+      ){
+        return false;
+      }
+
+      const a = parseLocal(r.start);
+      const b = parseLocal(x.start);
+
+      const diff =
+        Math.abs(a - b) / 86400000;
+
+      return diff <= 1 && x.start > r.start;
+
+    });
+
+  });
   localStorage.setItem(
     "racerFreeDaysDB",
     JSON.stringify(db)
