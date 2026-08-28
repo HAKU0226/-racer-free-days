@@ -440,6 +440,15 @@ button{
 
 <script>
 
+
+  const SUPABASE_URL =
+  "https://uyfwiexvafhcasdbepan.supabase.co";
+
+const SUPABASE_KEY =
+  "sb_publishable_CKspi4tPZKTAzC6tQmILyw_JjTV8KUz";
+
+let sharedRowId = null;
+
 let db = JSON.parse(
   localStorage.getItem("racerFreeDaysDB") ||
   '{"people":[],"races":[],"lastSync":null}'
@@ -448,9 +457,108 @@ let db = JSON.parse(
 let view = new Date();
 view.setDate(1);
 
-
 function save(){
-  localStorage.setItem("racerFreeDaysDB",JSON.stringify(db));
+
+  localStorage.setItem(
+    "racerFreeDaysDB",
+    JSON.stringify(db)
+  );
+
+  saveSharedData();
+
+}
+
+async function saveSharedData(){
+
+  try{
+
+    const headers = {
+      "apikey": SUPABASE_KEY,
+      "Content-Type": "application/json",
+      "Prefer": "return=representation"
+    };
+
+    let url =
+      `${SUPABASE_URL}/rest/v1/shared_data`;
+
+    let method = "POST";
+
+    if(sharedRowId !== null){
+      url += `?id=eq.${sharedRowId}`;
+      method = "PATCH";
+    }
+
+    const response = await fetch(url,{
+      method,
+      headers,
+      body:JSON.stringify({
+        data:db
+      })
+    });
+
+    if(!response.ok){
+      throw new Error("共有保存失敗");
+    }
+
+    const rows = await response.json();
+
+    if(rows[0]?.id){
+      sharedRowId = rows[0].id;
+    }
+
+  }
+  catch(error){
+    console.error(error);
+  }
+
+}
+
+async function loadSharedData(){
+
+  try{
+
+    const response = await fetch(
+      `${SUPABASE_URL}/rest/v1/shared_data?select=id,data&order=created_at.desc&limit=1`,
+      {
+        headers:{
+          "apikey":SUPABASE_KEY
+        }
+      }
+    );
+
+    if(!response.ok){
+      throw new Error("共有データ取得失敗");
+    }
+
+    const rows = await response.json();
+
+    if(rows.length){
+
+      sharedRowId = rows[0].id;
+
+      if(rows[0].data){
+        db = rows[0].data;
+
+        localStorage.setItem(
+          "racerFreeDaysDB",
+          JSON.stringify(db)
+        );
+
+        render();
+      }
+
+    }
+    else{
+
+      await saveSharedData();
+
+    }
+
+  }
+  catch(error){
+    console.error(error);
+  }
+
 }
 
 
@@ -1225,8 +1333,11 @@ function escapeHtml(text){
 
 
 render();
+  loadSharedData();
 
 </script>
+
+
 
 </body>
 </html>
