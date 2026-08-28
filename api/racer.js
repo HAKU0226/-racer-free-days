@@ -140,11 +140,31 @@ for (const v of VENUES) {
         });
       }
     }
+const cleanedSchedules = schedules.filter((r, i, arr) => {
 
+  return !arr.some((x, j) => {
+
+    if (
+      j === i ||
+      x.venue !== r.venue ||
+      x.end !== r.end
+    ) {
+      return false;
+    }
+
+    const a = new Date(r.start + "T00:00:00");
+    const b = new Date(x.start + "T00:00:00");
+
+    const diff =
+      Math.abs(a - b) / 86400000;
+
+    return diff <= 1 && x.start > r.start;
+  });
+});
     return res.status(200).json({
       ok: true,
       number,
-      schedules,
+      schedules: cleanedSchedules,
       source: "BOAT RACE公式"
     });
 
