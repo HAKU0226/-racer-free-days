@@ -460,15 +460,21 @@ view.setDate(1);
 function save(){
   db.races = db.races.filter((r, i, arr) => {
 
-    if(r.source !== "auto"){
-      return true;
-    }
+  const rAuto =
+  r.source === "auto" || !r.source;
+
+if(!rAuto){
+  return true;
+}
 
     return !arr.some((x, j) => {
 
-      if(j === i || x.source !== "auto"){
-        return false;
-      }
+    const xAuto =
+  x.source === "auto" || !x.source;
+
+if(j === i || !xAuto){
+  return false;
+}
 
       if(
         x.person !== r.person ||
