@@ -1245,10 +1245,7 @@ if(!response.ok || !data.ok){
 
 db.races =
   db.races.filter(
-    r => !(
-      r.person===p.id &&
-      (r.source==="auto" || !r.source)
-    )
+    r => r.person !== p.id
   );
 
 (data.schedules || []).forEach(r=>{
