@@ -91,18 +91,39 @@ export default async function handler(req, res) {
       const start = toIso(match[1]);
       const end = toIso(match[2]);
 
-      const after =
-        text.slice(match.index + match[0].length,
-                   match.index + match[0].length + 500);
+      const contextStart = Math.max(0, match.index - 200);
 
-      let venue = "";
+const contextEnd = Math.min(
+  text.length,
+  match.index + match[0].length + 200
+);
 
-      for (const v of VENUES) {
-        if (after.includes(v)) {
-          venue = v;
-          break;
-        }
-      }
+const context =
+  text.slice(contextStart, contextEnd);
+
+const datePos =
+  match.index - contextStart;
+
+let venue = "";
+let bestDistance = Infinity;
+
+for (const v of VENUES) {
+
+  let pos = context.indexOf(v);
+
+  while (pos !== -1) {
+
+    const distance =
+      Math.abs(pos - datePos);
+
+    if (distance < bestDistance) {
+      bestDistance = distance;
+      venue = v;
+    }
+
+    pos = context.indexOf(v, pos + 1);
+  }
+}
 
       if (
         !schedules.some(
