@@ -468,6 +468,7 @@ function save(){
 
 }
 
+
 async function saveSharedData(){
 
   try{
@@ -478,32 +479,58 @@ async function saveSharedData(){
       "Prefer": "return=representation"
     };
 
-    let url =
-      `${SUPABASE_URL}/rest/v1/shared_data`;
+    if(sharedRowId === null){
 
-    let method = "POST";
+      const check = await fetch(
+        `${SUPABASE_URL}/rest/v1/shared_data?select=id&order=id.asc&limit=1`,
+        {
+          headers:{
+            "apikey":SUPABASE_KEY
+          }
+        }
+      );
+
+      const rows = await check.json();
+
+      if(rows.length){
+        sharedRowId = rows[0].id;
+      }
+
+    }
 
     if(sharedRowId !== null){
-      url += `?id=eq.${sharedRowId}`;
-      method = "PATCH";
+
+      await fetch(
+        `${SUPABASE_URL}/rest/v1/shared_data?id=eq.${sharedRowId}`,
+        {
+          method:"PATCH",
+          headers,
+          body:JSON.stringify({
+            data:db
+          })
+        }
+      );
+
     }
+    else{
 
-    const response = await fetch(url,{
-      method,
-      headers,
-      body:JSON.stringify({
-        data:db
-      })
-    });
+      const response = await fetch(
+        `${SUPABASE_URL}/rest/v1/shared_data`,
+        {
+          method:"POST",
+          headers,
+          body:JSON.stringify({
+            data:db
+          })
+        }
+      );
 
-    if(!response.ok){
-      throw new Error("共有保存失敗");
-    }
+      const rows = await response.json();
 
-    const rows = await response.json();
+      if(rows[0]?.id){
+        sharedRowId = rows[0].id;
+      }
 
-    if(rows[0]?.id){
-      sharedRowId = rows[0].id;
     }
 
   }
@@ -518,7 +545,7 @@ async function loadSharedData(){
   try{
 
     const response = await fetch(
-      `${SUPABASE_URL}/rest/v1/shared_data?select=id,data&order=created_at.desc&limit=1`,
+      `${SUPABASE_URL}/rest/v1/shared_data?select=id,data&order=id.asc&limit=1`,
       {
         headers:{
           "apikey":SUPABASE_KEY
@@ -537,6 +564,7 @@ async function loadSharedData(){
       sharedRowId = rows[0].id;
 
       if(rows[0].data){
+
         db = rows[0].data;
 
         localStorage.setItem(
@@ -545,6 +573,7 @@ async function loadSharedData(){
         );
 
         render();
+
       }
 
     }
@@ -560,7 +589,6 @@ async function loadSharedData(){
   }
 
 }
-
 
 function id(){
   if(window.crypto && crypto.randomUUID){
