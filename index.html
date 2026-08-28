@@ -1249,7 +1249,33 @@ let data =
 if(!response.ok || !data.ok){
   throw new Error(data.error || "取得失敗");
 }
+const officialSchedules = data.schedules || [];
 
+db.races = db.races.filter(r => {
+
+  if(r.person !== p.id){
+    return true;
+  }
+
+  if(r.source !== "manual"){
+    return true;
+  }
+
+  return !officialSchedules.some(s => {
+
+    if(s.venue !== r.venue || s.end !== r.end){
+      return false;
+    }
+
+    const a = new Date(r.start + "T00:00:00");
+    const b = new Date(s.start + "T00:00:00");
+
+    const diff =
+      Math.abs(a - b) / 86400000;
+
+    return diff <= 1;
+  });
+});
 db.races =
   db.races.filter(
     r => r.person !== p.id || r.source === "manual"
