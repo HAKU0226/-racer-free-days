@@ -4,35 +4,1230 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>レーサーフリーデイズ</title>
+
 <style>
+*{box-sizing:border-box}
+
 body{
   margin:0;
   background:#07111f;
-  color:white;
+  color:#fff;
   font-family:-apple-system,BlinkMacSystemFont,"Noto Sans JP",sans-serif;
 }
-main{
-  max-width:700px;
-  margin:auto;
-  padding:24px 16px;
+
+header{
+  position:sticky;
+  top:0;
+  z-index:10;
+  background:#0b1626;
+  border-bottom:1px solid #24344a;
+  padding:16px;
 }
-h1{font-size:26px}
+
+header h1{
+  margin:0;
+  font-size:22px;
+}
+
+header p{
+  margin:4px 0 0;
+  color:#8fa2ba;
+  font-size:12px;
+}
+
+main{
+  max-width:900px;
+  margin:auto;
+  padding:14px;
+}
+
 .card{
   background:#111d2d;
   border:1px solid #26364b;
   border-radius:16px;
+  padding:15px;
+  margin-bottom:14px;
+}
+
+.row{
+  display:flex;
+  gap:8px;
+  align-items:center;
+  flex-wrap:wrap;
+}
+
+button,input,select{
+  font:inherit;
+  border:1px solid #33465f;
+  border-radius:10px;
+  padding:10px;
+  background:#0c1726;
+  color:white;
+}
+
+input{
+  min-width:0;
+}
+
+button{
+  cursor:pointer;
+}
+
+.primary{
+  background:#2f80ed;
+  border-color:#2f80ed;
+  font-weight:700;
+}
+
+.green{
+  background:#16a34a;
+  border-color:#16a34a;
+}
+
+.red{
+  color:#ff8f8f;
+}
+
+.muted{
+  color:#8fa2ba;
+  font-size:12px;
+}
+
+.stats{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:8px;
+}
+
+.stat{
+  background:#0b1626;
+  border-radius:12px;
+  padding:12px;
+}
+
+.stat span{
+  color:#8fa2ba;
+  font-size:11px;
+}
+
+.stat b{
+  display:block;
+  font-size:24px;
+  margin-top:4px;
+}
+
+.monthHead{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+}
+
+.monthTitle{
+  font-size:20px;
+  font-weight:800;
+}
+
+.calendar{
+  display:grid;
+  grid-template-columns:repeat(7,1fr);
+  gap:4px;
+  margin-top:12px;
+}
+
+.dow{
+  text-align:center;
+  color:#8fa2ba;
+  font-size:11px;
+  padding:4px;
+}
+
+.day{
+  min-height:76px;
+  border:1px solid #26364b;
+  border-radius:10px;
+  padding:6px;
+  background:#0b1626;
+  cursor:pointer;
+}
+
+.day.empty{
+  border:0;
+  background:transparent;
+}
+
+.dayNum{
+  font-weight:800;
+}
+
+.freeAll{
+  margin-top:8px;
+  border-radius:7px;
+  padding:4px;
+  font-size:11px;
+  background:#164e2b;
+  color:#a7f3c0;
+}
+
+.freeSome{
+  margin-top:8px;
+  border-radius:7px;
+  padding:4px;
+  font-size:11px;
+  background:#493514;
+  color:#fde68a;
+}
+
+.freeFew{
+  margin-top:8px;
+  border-radius:7px;
+  padding:4px;
+  font-size:11px;
+  background:#4b1f25;
+  color:#fecaca;
+}
+
+.person{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:8px;
+  padding:11px;
+  margin-top:8px;
+  border:1px solid #26364b;
+  border-radius:10px;
+}
+
+.personName{
+  font-weight:700;
+}
+
+.badge{
+  display:inline-block;
+  margin-top:4px;
+  padding:3px 7px;
+  border-radius:999px;
+  background:#1b2a40;
+  color:#a9bdd5;
+  font-size:11px;
+}
+
+.race{
+  padding:10px;
+  border:1px solid #26364b;
+  border-radius:10px;
+  margin-top:8px;
+}
+
+.rank{
+  display:flex;
+  justify-content:space-between;
+  padding:10px 0;
+  border-bottom:1px solid #26364b;
+}
+
+.modal{
+  position:fixed;
+  inset:0;
+  background:#000b;
+  z-index:30;
+  display:none;
+  align-items:flex-end;
+}
+
+.modalBox{
+  width:100%;
+  max-height:80vh;
+  overflow:auto;
+  background:#111d2d;
+  border-radius:20px 20px 0 0;
   padding:20px;
-  margin-top:16px;
+}
+
+#toast{
+  position:fixed;
+  left:50%;
+  bottom:25px;
+  transform:translateX(-50%);
+  background:#fff;
+  color:#111;
+  padding:10px 16px;
+  border-radius:999px;
+  display:none;
+  z-index:50;
+  font-size:13px;
+}
+
+@media(max-width:650px){
+  .stats{
+    grid-template-columns:repeat(2,1fr);
+  }
+
+  .day{
+    min-height:65px;
+    padding:5px;
+  }
+
+  .freeAll,.freeSome,.freeFew{
+    font-size:9px;
+  }
+
+  header h1{
+    font-size:20px;
+  }
 }
 </style>
 </head>
+
 <body>
-<main>
+
+<header>
   <h1>🚤 レーサーフリーデイズ</h1>
-  <div class="card">
-    <h2>みんなの空き日を探す</h2>
-    <p>2ヶ月先までの斡旋・前検日を確認して、全員が空いている日を探します。</p>
+  <p>2ヶ月先までの斡旋＋前検日から空き人数を自動計算</p>
+</header>
+
+<main>
+
+<div class="card">
+  <div class="stats">
+    <div class="stat">
+      <span>登録選手</span>
+      <b id="statPeople">0</b>
+    </div>
+
+    <div class="stat">
+      <span>全員空き</span>
+      <b id="statAll">0</b>
+    </div>
+
+    <div class="stat">
+      <span>最大空き人数</span>
+      <b id="statMax">0</b>
+    </div>
+
+    <div class="stat">
+      <span>連続全員空き</span>
+      <b id="statStreak">0</b>
+    </div>
   </div>
+</div>
+
+
+<div class="card">
+
+  <div class="monthHead">
+    <button onclick="moveMonth(-1)">←</button>
+    <div class="monthTitle" id="monthTitle"></div>
+    <button onclick="moveMonth(1)">→</button>
+  </div>
+
+  <div class="row" style="margin-top:10px">
+    <button onclick="goToday()">今月</button>
+
+    <select id="filter" onchange="render()">
+      <option value="0">全日表示</option>
+      <option value="1">1人以上空き</option>
+      <option value="3">3人以上空き</option>
+      <option value="5">5人以上空き</option>
+    </select>
+  </div>
+
+  <div id="calendar"></div>
+
+</div>
+
+
+<div class="card">
+
+  <h3>👤 選手登録</h3>
+
+  <div class="row">
+    <input id="racerName" placeholder="選手名">
+    <input id="racerNo" inputmode="numeric" maxlength="4" placeholder="登録番号">
+    <button class="primary" onclick="addRacer()">追加</button>
+  </div>
+
+  <div class="row" style="margin-top:10px">
+    <button class="green" onclick="syncAll()">🔄 全員の斡旋を同期</button>
+  </div>
+
+  <div class="muted" id="syncStatus" style="margin-top:8px">
+    未同期
+  </div>
+
+  <div id="people"></div>
+
+</div>
+
+
+<div class="card">
+
+  <h3>🏁 斡旋を手動登録</h3>
+
+  <div class="row">
+    <select id="racePerson"></select>
+    <input type="date" id="raceStart">
+    <span>〜</span>
+    <input type="date" id="raceEnd">
+    <input id="raceVenue" placeholder="開催場">
+    <button class="primary" onclick="addRace()">登録</button>
+  </div>
+
+  <div class="muted" style="margin-top:8px">
+    開催開始日の前日は自動で「前検日」として空きから除外します。
+  </div>
+
+  <div id="races"></div>
+
+</div>
+
+
+<div class="card">
+
+  <h3>⭐ 空きが多い日 TOP10</h3>
+
+  <div id="ranking"></div>
+
+</div>
+
+
+<div class="card">
+
+  <h3>💾 データ</h3>
+
+  <div class="row">
+    <button onclick="exportData()">バックアップ</button>
+
+    <button onclick="document.getElementById('importFile').click()">
+      復元
+    </button>
+
+    <input
+      id="importFile"
+      type="file"
+      accept=".json"
+      hidden
+      onchange="importData(event)"
+    >
+
+    <button class="red" onclick="resetAll()">全削除</button>
+  </div>
+
+</div>
+
 </main>
+
+
+<div class="modal" id="dayModal" onclick="closeModal(event)">
+  <div class="modalBox" onclick="event.stopPropagation()">
+
+    <div class="row" style="justify-content:space-between">
+      <h2 id="modalDate"></h2>
+      <button onclick="hideModal()">✕</button>
+    </div>
+
+    <h3>🟢 空き</h3>
+    <div id="modalFree"></div>
+
+    <h3>🔴 斡旋・前検</h3>
+    <div id="modalBusy"></div>
+
+  </div>
+</div>
+
+<div id="toast"></div>
+
+
+<script>
+
+let db = JSON.parse(
+  localStorage.getItem("racerFreeDaysDB") ||
+  '{"people":[],"races":[],"lastSync":null}'
+);
+
+let view = new Date();
+view.setDate(1);
+
+
+function save(){
+  localStorage.setItem("racerFreeDaysDB",JSON.stringify(db));
+}
+
+
+function id(){
+  if(window.crypto && crypto.randomUUID){
+    return crypto.randomUUID();
+  }
+
+  return Date.now()+"-"+Math.random();
+}
+
+
+function pad(n){
+  return String(n).padStart(2,"0");
+}
+
+
+function keyDate(y,m,d){
+  return `${y}-${pad(m+1)}-${pad(d)}`;
+}
+
+
+function parseLocal(str){
+  let [y,m,d] = str.split("-").map(Number);
+
+  return new Date(y,m-1,d);
+}
+
+
+function formatDate(d){
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+}
+
+
+function previousDay(str){
+  let d = parseLocal(str);
+  d.setDate(d.getDate()-1);
+
+  return formatDate(d);
+}
+
+
+function toast(text){
+
+  let t = document.getElementById("toast");
+
+  t.textContent=text;
+  t.style.display="block";
+
+  setTimeout(()=>{
+    t.style.display="none";
+  },2000);
+
+}
+
+
+function addRacer(){
+
+  let name =
+    document.getElementById("racerName").value.trim();
+
+  let no =
+    document.getElementById("racerNo").value.trim();
+
+  if(!name && !no){
+    alert("選手名か登録番号を入力してください");
+    return;
+  }
+
+  if(no && !/^\d{4}$/.test(no)){
+    alert("登録番号は4桁で入力してください");
+    return;
+  }
+
+  if(
+    no &&
+    db.people.some(p=>p.no===no)
+  ){
+    alert("その登録番号は登録済みです");
+    return;
+  }
+
+  db.people.push({
+    id:id(),
+    name:name || `選手 #${no}`,
+    no:no,
+    lastSync:null,
+    syncError:false
+  });
+
+  document.getElementById("racerName").value="";
+  document.getElementById("racerNo").value="";
+
+  save();
+  render();
+
+  toast("選手を追加しました");
+}
+
+
+function deleteRacer(pid){
+
+  if(!confirm("この選手を削除しますか？")){
+    return;
+  }
+
+  db.people =
+    db.people.filter(p=>p.id!==pid);
+
+  db.races =
+    db.races.filter(r=>r.person!==pid);
+
+  save();
+  render();
+
+}
+
+
+function addRace(){
+
+  let person =
+    document.getElementById("racePerson").value;
+
+  let start =
+    document.getElementById("raceStart").value;
+
+  let end =
+    document.getElementById("raceEnd").value;
+
+  let venue =
+    document.getElementById("raceVenue").value.trim();
+
+  if(!person || !start || !end){
+    alert("選手・開始日・終了日を入力してください");
+    return;
+  }
+
+  if(start>end){
+    alert("日付を確認してください");
+    return;
+  }
+
+  db.races.push({
+    id:id(),
+    person:person,
+    start:start,
+    end:end,
+    venue:venue,
+    source:"manual"
+  });
+
+  save();
+  render();
+
+  toast("斡旋を登録しました");
+}
+
+
+function deleteRace(rid){
+
+  db.races =
+    db.races.filter(r=>r.id!==rid);
+
+  save();
+  render();
+
+}
+
+
+function busyInfo(){
+
+  let data={};
+
+  db.people.forEach(p=>{
+    data[p.id]={};
+  });
+
+  db.races.forEach(r=>{
+
+    if(!data[r.person]){
+      return;
+    }
+
+    let pre = previousDay(r.start);
+
+    data[r.person][pre]={
+      type:"前検",
+      venue:r.venue || ""
+    };
+
+    let d=parseLocal(r.start);
+    let end=parseLocal(r.end);
+
+    while(d<=end){
+
+      let key=formatDate(d);
+
+      data[r.person][key]={
+        type:"斡旋",
+        venue:r.venue || ""
+      };
+
+      d.setDate(d.getDate()+1);
+
+    }
+
+  });
+
+  return data;
+}
+
+
+function freeCount(date,busy){
+
+  return db.people.filter(
+    p=>!busy[p.id]?.[date]
+  ).length;
+
+}
+
+
+function render(){
+
+  renderPeople();
+  renderRaces();
+
+  let y=view.getFullYear();
+  let m=view.getMonth();
+
+  document.getElementById("monthTitle").textContent =
+    `${y}年 ${m+1}月`;
+
+  let days=
+    new Date(y,m+1,0).getDate();
+
+  let first=
+    new Date(y,m,1).getDay();
+
+  let busy=busyInfo();
+
+  let filter=
+    Number(document.getElementById("filter").value);
+
+  let html='<div class="calendar">';
+
+  ["日","月","火","水","木","金","土"]
+  .forEach(d=>{
+    html+=`<div class="dow">${d}</div>`;
+  });
+
+  for(let i=0;i<first;i++){
+    html+='<div class="day empty"></div>';
+  }
+
+  let counts=[];
+
+  for(let d=1;d<=days;d++){
+
+    let key=keyDate(y,m,d);
+
+    let free=freeCount(key,busy);
+
+    counts.push({
+      date:key,
+      day:d,
+      free:free
+    });
+
+    let total=db.people.length;
+
+    let cls="freeFew";
+
+    if(total && free===total){
+      cls="freeAll";
+    }
+    else if(free>=Math.ceil(total/2)){
+      cls="freeSome";
+    }
+
+    let hidden =
+      filter &&
+      free<filter;
+
+    html+=`
+      <div
+        class="day"
+        onclick="showDay('${key}')"
+        style="${hidden?'opacity:.2':''}"
+      >
+        <div class="dayNum">${d}</div>
+
+        <div class="${cls}">
+          ${
+            total
+            ? free===total
+              ? "全員空き"
+              : `${free}/${total}人空き`
+            : "選手未登録"
+          }
+        </div>
+      </div>
+    `;
+
+  }
+
+  html+="</div>";
+
+  document.getElementById("calendar").innerHTML=html;
+
+  updateStats(counts);
+  renderRanking(counts);
+
+}
+
+
+function renderPeople(){
+
+  document.getElementById("statPeople").textContent=
+    db.people.length;
+
+  document.getElementById("people").innerHTML =
+    db.people.length
+    ? db.people.map(p=>`
+
+      <div class="person">
+
+        <div>
+          <div class="personName">${escapeHtml(p.name)}</div>
+
+          <span class="badge">
+            ${p.no ? `#${p.no}` : "登録番号なし"}
+          </span>
+
+          ${
+            p.lastSync
+            ? `<div class="muted">
+                最終同期 ${escapeHtml(p.lastSync)}
+               </div>`
+            : ""
+          }
+
+          ${
+            p.syncError
+            ? `<div class="muted" style="color:#ff8f8f">
+                自動取得失敗
+               </div>`
+            : ""
+          }
+
+        </div>
+
+        <button
+          class="red"
+          onclick="deleteRacer('${p.id}')"
+        >
+          削除
+        </button>
+
+      </div>
+
+    `).join("")
+    : '<div class="muted">選手がまだ登録されていません</div>';
+
+
+  document.getElementById("racePerson").innerHTML =
+    db.people.map(p=>
+      `<option value="${p.id}">
+        ${escapeHtml(p.name)}
+      </option>`
+    ).join("");
+
+}
+
+
+function renderRaces(){
+
+  let sorted=[...db.races].sort(
+    (a,b)=>a.start.localeCompare(b.start)
+  );
+
+  document.getElementById("races").innerHTML=
+    sorted.length
+    ? sorted.map(r=>{
+
+      let p=
+        db.people.find(x=>x.id===r.person);
+
+      return `
+        <div class="race">
+
+          <b>${escapeHtml(p?.name || "不明")}</b>
+
+          <div>
+            ${r.start} 〜 ${r.end}
+          </div>
+
+          <div class="muted">
+            前検 ${previousDay(r.start)}
+            ${r.venue ? " / "+escapeHtml(r.venue) : ""}
+          </div>
+
+          <button
+            class="red"
+            style="margin-top:7px"
+            onclick="deleteRace('${r.id}')"
+          >
+            削除
+          </button>
+
+        </div>
+      `;
+
+    }).join("")
+    : '<div class="muted">斡旋データなし</div>';
+
+}
+
+
+function updateStats(counts){
+
+  let total=db.people.length;
+
+  let all=
+    counts.filter(
+      x=>total && x.free===total
+    ).length;
+
+  let max=
+    counts.length
+    ? Math.max(...counts.map(x=>x.free))
+    : 0;
+
+  let streak=0;
+  let current=0;
+
+  counts.forEach(x=>{
+
+    if(total && x.free===total){
+      current++;
+      streak=Math.max(streak,current);
+    }
+    else{
+      current=0;
+    }
+
+  });
+
+  document.getElementById("statAll").textContent=all;
+  document.getElementById("statMax").textContent=max;
+  document.getElementById("statStreak").textContent=streak;
+
+}
+
+
+function renderRanking(counts){
+
+  let top=[...counts]
+    .sort((a,b)=>{
+      if(b.free!==a.free){
+        return b.free-a.free;
+      }
+
+      return a.date.localeCompare(b.date);
+    })
+    .slice(0,10);
+
+  document.getElementById("ranking").innerHTML =
+    top.length
+    ? top.map((x,i)=>`
+
+      <div
+        class="rank"
+        onclick="showDay('${x.date}')"
+      >
+        <span>
+          ${i+1}. ${x.date}
+        </span>
+
+        <b>
+          ${
+            db.people.length &&
+            x.free===db.people.length
+            ? "全員空き"
+            : `${x.free}人空き`
+          }
+        </b>
+      </div>
+
+    `).join("")
+    : '<div class="muted">データなし</div>';
+
+}
+
+
+function showDay(date){
+
+  let busy=busyInfo();
+
+  let free=[];
+  let busyPeople=[];
+
+  db.people.forEach(p=>{
+
+    let info=
+      busy[p.id]?.[date];
+
+    if(info){
+
+      busyPeople.push({
+        name:p.name,
+        info:info
+      });
+
+    }
+    else{
+
+      free.push(p.name);
+
+    }
+
+  });
+
+  document.getElementById("modalDate").textContent=date;
+
+  document.getElementById("modalFree").innerHTML=
+    free.length
+    ? free.map(n=>
+      `<div class="person">${escapeHtml(n)}</div>`
+    ).join("")
+    : '<div class="muted">なし</div>';
+
+  document.getElementById("modalBusy").innerHTML=
+    busyPeople.length
+    ? busyPeople.map(x=>
+      `<div class="person">
+        <span>${escapeHtml(x.name)}</span>
+        <span>
+          ${x.info.type}
+          ${x.info.venue ? " / "+escapeHtml(x.info.venue) : ""}
+        </span>
+      </div>`
+    ).join("")
+    : '<div class="muted">なし</div>';
+
+  document.getElementById("dayModal").style.display="flex";
+
+}
+
+
+function hideModal(){
+
+  document.getElementById("dayModal").style.display="none";
+
+}
+
+
+function closeModal(e){
+
+  if(e.target.id==="dayModal"){
+    hideModal();
+  }
+
+}
+
+
+function moveMonth(n){
+
+  view.setMonth(view.getMonth()+n);
+
+  render();
+
+}
+
+
+function goToday(){
+
+  view=new Date();
+
+  view.setDate(1);
+
+  render();
+
+}
+
+
+/* ============================
+   自動斡旋取得
+============================ */
+
+async function syncAll(){
+
+  if(!db.people.length){
+    alert("選手を登録してください");
+    return;
+  }
+
+  let status=document.getElementById("syncStatus");
+
+  status.textContent="斡旋情報を取得中…";
+
+  let success=0;
+
+  for(let p of db.people){
+
+    if(!p.no){
+      continue;
+    }
+
+    try{
+
+      let url=
+        `https://www.boatrace.jp/owpc/pc/data/racersearch/profile?toban=${encodeURIComponent(p.no)}`;
+
+      let response=
+        await fetch(url);
+
+      if(!response.ok){
+        throw new Error("取得失敗");
+      }
+
+      let text=
+        await response.text();
+
+      /*
+        BOATRACE側のページ仕様変更や
+        ブラウザのCORS制限によって
+        自動解析できない場合があります。
+      */
+
+      let dates=[
+        ...text.matchAll(
+          /(\d{4})[\/.-](\d{1,2})[\/.-](\d{1,2})/g
+        )
+      ];
+
+      if(dates.length<2){
+        throw new Error("日付取得不可");
+      }
+
+      p.syncError=false;
+      p.lastSync=
+        new Date().toLocaleString("ja-JP");
+
+      success++;
+
+    }
+    catch(e){
+
+      p.syncError=true;
+
+    }
+
+  }
+
+  db.lastSync=
+    new Date().toLocaleString("ja-JP");
+
+  save();
+  render();
+
+  status.textContent=
+    `最終同期 ${db.lastSync} / ${success}人確認`;
+
+  if(success<db.people.filter(x=>x.no).length){
+
+    toast(
+      "取得できない選手は手動登録を利用してください"
+    );
+
+  }
+
+}
+
+
+/* ============================
+   バックアップ
+============================ */
+
+function exportData(){
+
+  let blob=
+    new Blob(
+      [JSON.stringify(db,null,2)],
+      {type:"application/json"}
+    );
+
+  let a=document.createElement("a");
+
+  a.href=
+    URL.createObjectURL(blob);
+
+  a.download=
+    "racer-free-days-backup.json";
+
+  a.click();
+
+}
+
+
+function importData(e){
+
+  let file=e.target.files[0];
+
+  if(!file){
+    return;
+  }
+
+  let reader=
+    new FileReader();
+
+  reader.onload=()=>{
+
+    try{
+
+      let parsed=
+        JSON.parse(reader.result);
+
+      if(
+        !Array.isArray(parsed.people) ||
+        !Array.isArray(parsed.races)
+      ){
+        throw new Error();
+      }
+
+      db=parsed;
+
+      save();
+      render();
+
+      toast("復元しました");
+
+    }
+    catch(e){
+
+      alert("バックアップファイルを読み込めませんでした");
+
+    }
+
+  };
+
+  reader.readAsText(file);
+
+}
+
+
+function resetAll(){
+
+  if(!confirm("すべてのデータを削除しますか？")){
+    return;
+  }
+
+  db={
+    people:[],
+    races:[],
+    lastSync:null
+  };
+
+  save();
+  render();
+
+}
+
+
+function escapeHtml(text){
+
+  return String(text || "")
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;");
+
+}
+
+
+render();
+
+</script>
+
 </body>
 </html>
